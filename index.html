@@ -329,6 +329,7 @@
             const startInputRef = useRef(null);
             const endNoteRef = useRef(null);
             const timerRef = useRef(null);
+            const startTimeRef = useRef(0); // 新增：用於記錄基準開始時間
             
             const [history, setHistory] = useState(() => {
                 try {
@@ -371,7 +372,16 @@
 
             useEffect(() => {
                 if (isActive) {
-                    timerRef.current = setInterval(() => setSeconds(p => p + 1), 1000);
+                    // 修正計時邏輯：使用 Date.now() 差值計算，解決螢幕關閉時瀏覽器降速問題
+                    // 設定一個「理論上的開始時間」，即「現在 - 已過秒數」
+                    startTimeRef.current = Date.now() - (seconds * 1000);
+                    
+                    timerRef.current = setInterval(() => {
+                        const now = Date.now();
+                        // 每次都重新計算「現在」與「理論開始時間」的差距
+                        const elapsed = Math.floor((now - startTimeRef.current) / 1000);
+                        setSeconds(elapsed);
+                    }, 1000);
                 } else {
                     clearInterval(timerRef.current);
                 }
@@ -833,5 +843,3 @@
     </script>
 </body>
 </html>
-</html>
-
